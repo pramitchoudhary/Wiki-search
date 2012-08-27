@@ -1,0 +1,179 @@
+<html>
+<head><title>Wiki Search</title>
+	<style type="text/css">
+		a {text-decoration:none;}
+		/*#resultsUl {margin-left:180px;} */
+		.summary_text {display:block;padding-top:5px;}
+		.resultLi {list-style-type:none;padding-bottom:15px;}
+		#leftLink {float:left;}
+		#rightLink {float:right;}
+		#footer {margin-top:10px;border:1px solid;height:20px;padding:10px 20px;display:none;margin-bottom:100px;}
+		.yui3-aclist-list {background-color:#F1F1F1;}
+		#pageNumDisp {margin-left:200px;}
+	</style>
+</head>
+<body>
+	<div id="container" style="margin-left:200px;">
+		<h1 style="margin-left:320px;">Wiki Search</h1>
+		<div style="margin-left:100px;border-top:1px solid;padding-top:20px;width:700px;">
+			<div>
+				<input type="text" id="ac-input" style="width:300px;margin-left:100px;"></input>
+				<button id="connectToServer"  style="margin-left:50px;" value="Search" >Search</button>
+			</div>
+			<div id="loadingIcon" style="margin-top:35px;margin-left:190px;"></div>
+			<div id="results" >
+			</div>
+			<div id="footer">
+				<a href="#" id="leftLink">Previous</a>
+					<span id="pageNumDisp"></span>
+				<a href="#" id="rightLink">Next</a>
+			</div>
+		</div>
+		<div id="pageNum" style="display:none;">0</div>
+	</div>
+	<script src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
+	<script type="text/javascript">
+
+var textBox = document.getElementById("ac-input");
+
+var flag=0;
+function setUpPersistantConnection(e){
+
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.onreadystatechange=function(){
+		try{
+			if( xmlhttp.status==200 && xmlhttp.readyState==4){
+				var textSent = new String(xmlhttp.responseText);
+				//document.getElementById("loadingIcon").display.visibility="none";
+				//alert("text len : "+textSent.length);
+				flag=0;
+				if(textSent.length<=35){
+
+					var pageNum = document.getElementById("pageNum").innerHTML;
+					if( parseInt(pageNum) == 0 ){
+						alert("No Results");
+					}
+					else{
+						alert("This is the last page");
+						document.getElementById("results").style.visibility="visible";
+						flag=1;
+						var pageNum = document.getElementById("pageNum").innerHTML;
+						pageNum = parseInt(pageNum)-1;
+						document.getElementById("pageNum").innerHTML = pageNum;
+					}
+					document.getElementById("rightLink").style.visibility="hidden";
+					document.getElementById("loadingIcon").style.visibility="hidden";
+				}
+					
+				if(flag==0){
+					document.getElementById("results").innerHTML= textSent;
+					document.getElementById("results").style.visibility="visible";
+					document.getElementById("footer").style.display= "block";
+					//document.getElementById("loadingIcon").innerHTML="<span></span>";
+					document.getElementById("loadingIcon").style.visibility="hidden";
+				}
+			}
+		}catch(e){
+			console.log(e.message + " Xml status : ");
+		}
+	};
+	if(flag==0){
+		var query=textBox.value;
+		var pageNum = document.getElementById("pageNum").innerHTML;
+		xmlhttp.open("POST","http://localhost:5000?q=" +query+ "&pageNum="+pageNum+"&param=EOS",true);
+		xmlhttp.send("STUFF POSTED");
+		document.getElementById("results").style.visibility="hidden";
+		document.getElementById("loadingIcon").innerHTML="<img src='http://l.yimg.com/t/yil/yil20120208/images/ajax-loader-bar.gif' />";
+		document.getElementById("loadingIcon").style.visibility="visible";
+	}
+};
+
+
+function setEventHandlers(){
+	var connectButton=document.getElementById("connectToServer");
+	connectButton.onclick=function(e){
+		document.getElementById("rightLink").style.visibility="visible";
+		document.getElementById("pageNum").innerHTML = 0;
+		setUpPersistantConnection(e);
+		document.getElementById("pageNumDisp").innerHTML = "Page 1";
+	}
+
+
+	var previousLink = document.getElementById("leftLink");
+	previousLink.onclick=function(e){
+		var pageNum = document.getElementById("pageNum").innerHTML;
+		if(pageNum == 0)
+		{
+			alert("This is first page");
+			return;
+		}
+		pageNum = parseInt(pageNum)-1;
+		document.getElementById("pageNum").innerHTML = pageNum;
+		document.getElementById("pageNumDisp").innerHTML = "Page "+ ( parseInt(pageNum) +1);
+		document.getElementById("rightLink").style.visibility="visible";
+		console.log("COming to setup connection ! ");
+		flag=0;
+		setUpPersistantConnection(e);
+	}
+	var nextLink = document.getElementById("rightLink");
+	nextLink.onclick=function(e){
+		var pageNum = document.getElementById("pageNum").innerHTML;
+		pageNum = parseInt(pageNum)+1;
+		document.getElementById("pageNum").innerHTML = pageNum;
+		//document.getElementById("pageNumDisp").innerHTML = pageNum;
+		document.getElementById("pageNumDisp").innerHTML = "Page "+ ( parseInt(pageNum) +1);
+		setUpPersistantConnection(e);
+	}
+};
+
+function main(){
+	setEventHandlers();	
+}
+main();
+</script>
+
+<script>
+YUI().use('autocomplete', 'autocomplete-filters', 'autocomplete-highlighters', function (Y) {
+  var states = [
+	'99 balloons',
+	'Apple',
+	'Computer Programming',
+	'DNA',
+	'Do geese see god',
+	'Epigenetics',
+	'Eye of Horus',
+	'Financial meltdown',
+	'Hollywood',
+	'Justin Timberlake',
+	'Least Squares',
+	'Madam Im Adam',
+	'Mars robots',
+	'Maya',
+	'Mean Average Precision',
+	'Microsoft',
+	'Much ado about nothing',
+	'Page six',
+	'Physics Nobel Prizes',
+	'Precision',
+	'Read the manual',
+	'Roman Empire',
+	'Solar energy',
+	'Spanish Civil War',
+	'Statistical Significance',
+	'Steve Jobs',
+	'The Maya',
+	'Triple Cross',
+	'Tuscany',
+	'US Constitution'
+  ];
+
+  Y.one('#ac-input').plug(Y.Plugin.AutoComplete, {
+    resultFilters    : 'phraseMatch',
+    resultHighlighter: 'phraseMatch',
+    source           : states
+  });
+});
+</script>
+
+</body>
+</html>
